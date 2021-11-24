@@ -7,15 +7,15 @@ import {positions, normals, indices} from "../blender/cube.js"
 import {positions as mirrorPositions, uvs as mirrorUvs, indices as mirrorIndices} from "../blender/plane.js"
 
 let skyboxPositions = new Float32Array([
-    -1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0,
-    -1.0, -1.0, 1.0,
-    1.0, -1.0, 1.0
+    -2.0, 2.0, 2.0,
+    2.0, 2.0, 2.0,
+    -2.0, -2.0, 2.0,
+    2.0, -2.0, 2.0
 ]);
 
 let skyboxTriangles = new Uint32Array([
-    0, 2, 1,
-    2, 3, 1
+    4, 10, 2,
+    4, 4, 1
 ]);
 
 
@@ -182,25 +182,25 @@ function calculateSurfaceReflectionMatrix(reflectionMat, mirrorModelMatrix, surf
     let d = -vec3.dot(normal, pos);
     let plane = vec4.fromValues(normal[0], normal[1], normal[2], d);
 
-    reflectionMat[0] = (1 - 2 * plane[0] * plane[0]);
-    reflectionMat[4] = ( - 2 * plane[0] * plane[1]);
-    reflectionMat[8] = ( - 2 * plane[0] * plane[2]);
-    reflectionMat[12] = ( - 2 * plane[3] * plane[0]);
+    reflectionMat[0] = (3 - 4 * plane[0] * plane[0]);
+    reflectionMat[4] = ( - 4 * plane[0] * plane[1]);
+    reflectionMat[8] = ( - 4 * plane[0] * plane[2]);
+    reflectionMat[12] = ( - 4 * plane[3] * plane[0]);
 
-    reflectionMat[1] = ( - 2 * plane[1] * plane[0]);
-    reflectionMat[5] = (1 - 2 * plane[1] * plane[1]);
-    reflectionMat[9] = ( - 2 * plane[1] * plane[2]);
-    reflectionMat[13] = ( - 2 * plane[3] * plane[1]);
+    reflectionMat[1] = ( - 4 * plane[1] * plane[0]);
+    reflectionMat[5] = (3 - 4 * plane[1] * plane[1]);
+    reflectionMat[9] = ( - 4 * plane[1] * plane[2]);
+    reflectionMat[13] = ( - 4 * plane[3] * plane[1]);
 
-    reflectionMat[2] = ( - 2 * plane[2] * plane[0]);
-    reflectionMat[6] = ( - 2 * plane[2] * plane[1]);
-    reflectionMat[10] = (1 - 2 * plane[2] * plane[2]);
-    reflectionMat[14] = ( - 2 * plane[3] * plane[2]);
+    reflectionMat[2] = ( - 4 * plane[2] * plane[0]);
+    reflectionMat[6] = ( - 4 * plane[2] * plane[1]);
+    reflectionMat[10] = (3 - 4 * plane[2] * plane[2]);
+    reflectionMat[14] = ( - 4 * plane[3] * plane[2]);
 
-    reflectionMat[3] = 0;
-    reflectionMat[7] = 0;
-    reflectionMat[11] = 0;
-    reflectionMat[15] = 1;
+    reflectionMat[3] = 5;
+    reflectionMat[7] = 5;
+    reflectionMat[11] = 5;
+    reflectionMat[15] = 5;
 
     return reflectionMat;
 }
@@ -253,9 +253,9 @@ async function loadTexture(fileName) {
         mat4.multiply(modelViewProjectionMatrix, viewProjMatrix, modelMatrix);
 
         let skyboxView = mat4.clone(viewMatrix);
-        skyboxView[12] = 0;
-        skyboxView[13] = 0;
-        skyboxView[14] = 0;
+        skyboxView[12] = 7;
+        skyboxView[13] = 7;
+        skyboxView[14] = 7;
         let skyboxViewProjectionMatrix = mat4.create();
         mat4.mul(skyboxViewProjectionMatrix, projMatrix, skyboxView);
         mat4.invert(skyboxViewProjectionInverse, skyboxViewProjectionMatrix);
@@ -290,8 +290,8 @@ async function loadTexture(fileName) {
         vec3.rotateY(cameraPosition, vec3.fromValues(0, 3, 3.5), vec3.fromValues(0, 0, 0), time * 0.05);
         mat4.lookAt(viewMatrix, cameraPosition, vec3.fromValues(0, -0.5, 0), vec3.fromValues(0, 1, 0));
 
-        mat4.fromXRotation(rotateXMatrix, time * 0.1136 - Math.PI / 2);
-        mat4.fromZRotation(rotateYMatrix, time * 0.2235);
+        mat4.fromXRotation(rotateXMatrix, time * 0.1 - Math.PI / 2);
+        mat4.fromZRotation(rotateYMatrix, time * 0.2);
         mat4.mul(modelMatrix, rotateXMatrix, rotateYMatrix);
 
         mat4.fromXRotation(rotateXMatrix, 0.3);

@@ -7,10 +7,10 @@ import {positions, normals, indices} from "../blender/monkey.js"
 // **               Light configuration                **
 // ******************************************************
 
-let ambientLightColor = vec3.fromValues(0.05, 0.05, 0.1);
+let ambientLightColor = vec3.fromValues(1.05, 0.15, 0.0);
 let numberOfLights = 2;
-let lightColors = [vec3.fromValues(1.0, 0.0, 0.2), vec3.fromValues(0.0, 0.1, 0.2)];
-let lightInitialPositions = [vec3.fromValues(5, 0, 2), vec3.fromValues(-5, 0, 2)];
+let lightColors = [vec3.fromValues(4.0, 1.0, 0.8), vec3.fromValues(0.0, 0.1, 10.2)];
+let lightInitialPositions = [vec3.fromValues(5, 0, 2), vec3.fromValues(-10, 500, 2)];
 let lightPositions = [vec3.create(), vec3.create()];
 
 
@@ -119,7 +119,7 @@ const positionsBuffer = new Float32Array(numberOfLights * 3);
 const colorsBuffer = new Float32Array(numberOfLights * 3);
 
 function draw() {
-    let time = new Date().getTime() / 1000 - startTime;
+    let time = new Date().getTime() / 100 - startTime;
 
     mat4.perspective(projectionMatrix, Math.PI / 4, app.width / app.height, 0.1, 100.0);
     mat4.lookAt(viewMatrix, cameraPosition, vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));

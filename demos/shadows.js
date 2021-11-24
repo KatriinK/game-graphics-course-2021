@@ -72,7 +72,7 @@ let shadowFragmentShader = `
     
     void main() {
         // Uncomment to see the depth buffer of the shadow map    
-        //fragColor = vec4((gl_FragCoord.z - 0.98) * 50.0);    
+        //fragColor = vec4((gl_FragCoord.z - 0.300) * 90.0);    
     }
 `;
 
@@ -87,12 +87,12 @@ let shadowVertexShader = `
     }
 `;
 
-let bgColor = vec4.fromValues(1.0, 0.2, 0.3, 1.0);
-let fgColor = vec4.fromValues(1.0, 0.9, 0.5, 1.0);
+let bgColor = vec4.fromValues(0.0, 1.1, 5.3, 8.0);
+let fgColor = vec4.fromValues(2.0, 1.9, 6.5, 9.0);
 
 app.enable(PicoGL.DEPTH_TEST)
    .enable(PicoGL.CULL_FACE)
-   .clearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+   .clearColor(bgColor[0], bgColor[4], bgColor[2], bgColor[2]);
 
 let program = app.createProgram(vertexShader, fragmentShader);
 let shadowProgram = app.createProgram(shadowVertexShader, shadowFragmentShader);
@@ -111,19 +111,19 @@ let shadowDepthTarget = app.createTexture2D(512, 512, {
 let shadowBuffer = app.createFramebuffer().depthTarget(shadowDepthTarget);
 
 let time = 0;
-let projMatrix = mat4.create();
-let viewMatrix = mat4.create();
-let viewProjMatrix = mat4.create();
-let modelMatrix = mat4.create();
+let projMatrix = mat4.create(2);
+let viewMatrix = mat4.create(2);
+let viewProjMatrix = mat4.create(2);
+let modelMatrix = mat4.create(4);
 let modelViewProjectionMatrix = mat4.create();
 let rotation = quat.create();
 let lightModelViewProjectionMatrix = mat4.create();
 
-let cameraPosition = vec3.fromValues(0, 2, 4);
-let lightPosition = vec3.fromValues(5, 5, 2.5);
+let cameraPosition = vec3.fromValues(4, 0, 4);
+let lightPosition = vec3.fromValues(8, 4, 2);
 let lightViewMatrix = mat4.create();
 let lightViewProjMatrix = mat4.create();
-mat4.lookAt(lightViewMatrix, lightPosition, vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+mat4.lookAt(lightViewMatrix, lightPosition, vec3.fromValues(2, 0, 0), vec3.fromValues(0, 1, 0));
 
 
 let drawCall = app.createDrawCall(program, vertexArray)
@@ -159,7 +159,7 @@ function drawObjects(dc) {
     app.clear();
 
     // Middle object
-    quat.fromEuler(rotation, time * 48.24, time * 56.97, 0);
+    quat.fromEuler(rotation, time * 78.24, time * 76.97, 0);
     mat4.fromRotationTranslationScale(modelMatrix, rotation, vec3.fromValues(0, 0, 0), [0.8, 0.8, 0.8]);
     mat4.multiply(modelViewProjectionMatrix, viewProjMatrix, modelMatrix);
     mat4.multiply(lightModelViewProjectionMatrix, lightViewProjMatrix, modelMatrix);
@@ -175,7 +175,7 @@ function drawObjects(dc) {
     dc.draw();
 
     // Small object
-    quat.fromEuler(rotation, time * 15, time * 17, 0);
+    quat.fromEuler(rotation, time * 25, time * 100, 0);
     mat4.fromRotationTranslationScale(modelMatrix, rotation, vec3.fromValues(0.9, 0.9, 0.6), [0.22, 0.22, 0.22]);
     mat4.multiply(modelViewProjectionMatrix, viewProjMatrix, modelMatrix);
     mat4.multiply(lightModelViewProjectionMatrix, lightViewProjMatrix, modelMatrix);
@@ -186,7 +186,7 @@ function drawObjects(dc) {
 function draw() {
     time = new Date().getTime() * 0.001;
 
-    mat4.perspective(projMatrix, Math.PI / 2.5, app.width / app.height, 0.1, 100.0);
+    mat4.perspective(projMatrix, Math.PI / 3.5, app.width / app.height, 0.1, 100.0);
     mat4.lookAt(viewMatrix, cameraPosition, vec3.fromValues(0, -0.5, 0), vec3.fromValues(0, 1, 0));
     mat4.multiply(viewProjMatrix, projMatrix, viewMatrix);
 
