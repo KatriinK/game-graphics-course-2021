@@ -1,139 +1,32 @@
 import PicoGL from "../node_modules/picogl/build/module/picogl.js";
 import {mat4, vec3, vec4} from "../node_modules/gl-matrix/esm/index.js";
 
-// *********************************************************************************************************************
-// **                                                                                                                 **
-// **                  This is an example of simplistic forward rendering technique using WebGL                       **
-// **                                                                                                                 **
-// *********************************************************************************************************************
-
-// Home task: change anything you like in this small demo, be creative and make it look cool ;)
-// * You can change 3D cube model with any other mesh using Blender WebGL export addon, check blender/export_webgl.py
-// * Change object and camera transformations inside draw() function
-// * Change colors using bgColor and fgColor variables
-// * Distort object shape inside vertexShader
-// * Distort object colors inside fragmentShader
-
-// ******************************************************
-// **                       Data                       **
-// ******************************************************
-
-//         -.5 .5 -.5  +--------------+ .5 .5 -.5
-//                    /|             /|
-//                   / |            / |
-//      -.5 .5 .5   *--+-----------*  | .5 .5 .5
-//                  |  |           |  |
-//                  |  |           |  |
-//                  |  |           |  |
-//     -.5 -.5 -.5  |  +-----------+--+ .5 -.5 -.5
-//                  | /            | /
-//                  |/             |/
-//     -.5 -.5 .5   *--------------*  .5 -.5 .5
-
-const positions = new Float32Array([
-    // front
-    -0.5, 0.5, 0.5,
-    0.5, 0.5, 0.5,
-    0.5, -0.5, 0.5,
-    -0.5, -0.5, 0.5,
-
-    // back
-    -0.5, 0.5, -0.5,
-    0.5, 0.5, -0.5,
-    0.5, -0.5, -0.5,
-    -0.5, -0.5, -0.5,
-
-    //top
-    -0.5, 0.5, 0.5,
-    0.5, 0.5, 0.5,
-    0.5, 0.5, -0.5,
-    -0.5, 0.5, -0.5,
-
-    //bottom
-    -0.5, -0.5, 0.5,
-    0.5, -0.5, 0.5,
-    0.5, -0.5, -0.5,
-    -0.5, -0.5, -0.5,
-
-    //left
-    -0.5, -0.5, 0.5,
-    -0.5, 0.5, 0.5,
-    -0.5, 0.5, -0.5,
-    -0.5, -0.5, -0.5,
-
-    //right
-    0.5, -0.5, 0.5,
-    0.5, 0.5, 0.5,
-    0.5, 0.5, -0.5,
-    0.5, -0.5, -0.5,
+export const positions = new Float32Array([
+    -2, 0, 2,
+    2, 0, 2,
+    -2, 0, -2,
+    2, 0, -2,
 ]);
 
-const normals = new Float32Array([
-    // front
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-
-    // back
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-
-    //top
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-
-    //bottom
-    0.0, -1.0, 0.0,
-    0.0, -1.0, 0.0,
-    0.0, -1.0, 0.0,
-    0.0, -1.0, 0.0,
-
-    //left
-    -1.0, 0.0, 0.0,
-    -1.0, 0.0, 0.0,
-    -1.0, 0.0, 0.0,
-    -1.0, 0.0, 0.0,
-
-    //right
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
+export const normals = new Float32Array([
+    0, 1, 0,
+    0, 1, 0,
+    0, 1, 0,
+    0, 1, 0,
 ]);
 
-const indices = new Uint32Array([
-    // front
-    0, 3, 2,
-
-    // back
-    6, 7, 4,
-
-    // top
-    10, 11, 8,
-
-    // bottom
-    12, 15, 14,
-
-    // left
-    18, 19, 16,
-
-    // right
-    20, 23, 22,
+export const uvs = new Float32Array([
+    0, 1,
+    1, 1,
+    0, 0,
+    1, 0,
 ]);
 
-// import {positions, normals, indices} from "../blender/torus.js"
+export const indices = new Uint32Array([
+    0, 1, 2,
+    2, 1, 3
+]);
 
-
-// ******************************************************
-// **                 Pixel processing                 **
-// ******************************************************
-
-// language=GLSL
 let fragmentShader = `
     #version 300 es
     precision highp float;
@@ -151,12 +44,6 @@ let fragmentShader = `
     }
 `;
 
-
-// ******************************************************
-// **               Geometry processing                **
-// ******************************************************
-
-// language=GLSL
 let vertexShader = `
     #version 300 es
     
@@ -178,11 +65,6 @@ let vertexShader = `
         color = mix(bgColor * 0.8, fgColor, viewNormal.z) + pow(viewNormal.z, 20.0);
     }
 `;
-
-
-// ******************************************************
-// **             Application processing               **
-// ******************************************************
 
 let bgColor = vec4.fromValues(0.0, 0.0, 0.0, 0.0);
 let fgColor = vec4.fromValues(2.7, 0.4, 8.5, 1.7);
