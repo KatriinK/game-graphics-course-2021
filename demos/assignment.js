@@ -168,6 +168,73 @@ async function loadTexture(fileName) {
 
 let ambientLightColor = vec3.fromValues(1.05, 0.15, 0.0);
 let numberOfLights = 2;
-let lightColors = [vec3.fromValues(4.0, 1.0, 0.8), vec3.fromValues(0.0, 0.1, 10.2)];
+let lightColors = [vec3.fromValues(4.0, 9.0, 0.8), vec3.fromValues(0.0, 0.1, 10.2)];
 let lightInitialPositions = [vec3.fromValues(5, 0, 2), vec3.fromValues(-10, 500, 2)];
 let lightPositions = [vec3.create(), vec3.create()];
+
+let lightCalculationShader = `
+    uniform vec3 cameraPosition;
+    uniform vec3 ambientLightColor;    
+    uniform vec3 lightColors[${numberOfLights}];        
+    uniform vec3 lightPositions[${numberOfLights}];
+    
+    // This function calculates light reflection using Phong reflection model (ambient + diffuse + specular)
+    vec4 calculateLights(vec3 normal, vec3 position) {
+        vec3 viewDirection = normalize(cameraPosition.xyz - position);
+        vec4 color = vec4(ambientLightColor, 1.0);
+                
+        for (int i = 0; i < lightPositions.length(); i++) {
+            vec3 lightDirection = normalize(lightPositions[i] - position);
+            
+            // Lambertian reflection (ideal diffuse of matte surfaces) is also a part of Phong model                        
+            float diffuse = max(dot(lightDirection, normal), 0.0);                                    
+                      
+            // Phong specular highlight 
+            float specular = pow(max(dot(viewDirection, reflect(-lightDirection, normal)), 0.0), 50.0);
+            
+            // Blinn-Phong improved specular highlight                        
+            //float specular = pow(max(dot(normalize(lightDirection + viewDirection), normal), 0.0), 200.0);
+            
+            color.rgb += lightColors[i] * diffuse + specular;
+        }
+        return color;
+    }
+`;
+
+let drawCall = app.createDrawCall(program, vertexArray)
+    .uniform("ambientLightColor", ambientLightColor);
+
+let startTime = new Date().getTime() / 1000;
+
+let cameraPosition = vec3.fromValues(0, 0, 5);
+mat4.fromXRotation(modelMatrix, -Math.PI / 2);
+
+const positionsBuffer = new Float32Array(numberOfLights * 3);
+const colorsBuffer = new Float32Array(numberOfLights * 3);
+
+function draw() {
+    let time = new Date().getTime() / 100 - startTime;
+
+    mat4.perspective(projectionMatrix, Math.PI / 4, app.width / app.height, 0.1, 100.0);
+    mat4.lookAt(viewMatrix, cameraPosition, vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+    mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
+
+    drawCall.uniform("viewProjectionMatrix", viewProjectionMatrix);
+    drawCall.uniform("modelMatrix", modelMatrix);
+    drawCall.uniform("cameraPosition", cameraPosition);
+
+    for (let i = 0; i < numberOfLights; i++) {
+        vec3.rotateZ(lightPositions[i], lightInitialPositions[i], vec3.fromValues(0, 0, 0), time);
+        positionsBuffer.set(lightPositions[i], i * 3);
+        colorsBuffer.set(lightColors[i], i * 3);
+    }
+
+    drawCall.uniform("lightPositions[0]", positionsBuffer);
+    drawCall.uniform("lightColors[0]", colorsBuffer);
+
+    app.clear();
+    drawCall.draw();
+
+    requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
